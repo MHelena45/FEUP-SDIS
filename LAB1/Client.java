@@ -3,7 +3,7 @@ import java.net.*;
 
 public class Client {
 
-    static final int  timeout = 2000;
+    static final int timeout = 2000; // in ms
     public static void main(String[] args) throws IOException {
         String message;
         boolean register = false;
@@ -11,10 +11,10 @@ public class Client {
         System.out.println(args.length);
         System.out.println(args[2]);
 
-        if (args.length == 4 && (args[2].equals("lookup") || args[2].equals("LOOKUP"))) {
+        if (args.length == 4 && (args[2].equalsIgnoreCase("lookup") )) {
             message = args[2] + " " + args[3]; // oper and opnd are prepare to be send
         }
-        else if(args.length == 5 && (args[2].equals("register") || args[2].equals("REGISTER"))) {
+        else if(args.length == 5 && (args[2].equalsIgnoreCase("register") )) {
             message = args[2] + " " + args[3] + " " + args[4]; // oper and opnd are prepare to be send
             register = true;
         }
