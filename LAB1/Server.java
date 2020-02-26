@@ -1,64 +1,71 @@
-import java.utils.Arrays;
+import java.util.Hashtable;
+import java.io.IOException;
 import java.net.*;
 
-class Server{
-    class RequestPacket{
-        String operation;
-        String DNS;
-        String IP;
-    }
-
-    class Pair{
-        String DNS;
-        String IP;
-    }
-
-    Pair[] DNStable;
+public class Server{
+    private static Hashtable<String,String> DNStable;
     
-    final int port;
+    private static int port;
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
+        if(args.length != 1){
+            System.out.println("Missing argument port");
+            return;
+        }
+
+        DNStable = new Hashtable<String, String>();
+
         port = Integer.parseInt(args[0]);
 
         getRequests();
     }
 
-    private getRequests(){
-        DatagramSocket socket = DatagramSocket(port);
-        DatagramPacket packet;
-        String reply;
+    private static void getRequests() throws IOException {
+        DatagramSocket socket = new DatagramSocket(port);
+
+        System.out.println("Server initiated with port " + port);
     
         while(true){
+            byte[] buffer = new byte[256];
+
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
             socket.receive(packet);
 
-            parseRequest(packet, reply);
-            
-            packet = DatagramPacket(reply.getBytes(), reply.getByte().getLength());
+            System.out.println("Received packet from client");
 
+            String reply = parseRequest(packet);
+
+            buffer = reply.getBytes();
+
+			InetAddress address = packet.getAddress();
+			int port = packet.getPort();
+			packet = new DatagramPacket(buffer, buffer.length, address, port);
+            
             socket.send(packet);
         }
     }
 
-    private parseRequest(DatagramPacket packet, String reply){
-        String data = String(packet.getData(), packet.getData().getLength());
+    private static String parseRequest(DatagramPacket packet){
+        String data = new String(packet.getData(), 0, packet.getData().length);
         String[] words = data.split("\\s");
-        RequestPacket request;
+        RequestPacket request = new RequestPacket();
+        String reply;
 
-        if(words.length == 3 && (words[0] == "REGISTER" || words[0] == "register")){
+        if(words.length == 3 && (words[0].equals("REGISTER") || words[0].equals("register"))){
             request.operation = "register";
             request.DNS = words[1];
             request.IP = words[2];
 
             System.out.println("Server: REGISTER " + request.DNS + " " + request.IP);
 
-            if(check_table(request))
-                reply = "-1";
-            else{
-                add_to_table(request);
-                reply = DNStable.length.toString();
+            if(check_table(request)){
+                DNStable.put(request.DNS, request.IP);
+                reply = Integer.toString(DNStable.size());
             }
+            else reply = "-1";
         }
-        else if(words.length == 2 &&  (words[0] == "LOOKUP" || words[0] == "lookup")){
+        else{
             request.operation = "lookup";
             request.DNS = words[1];
 
@@ -68,26 +75,21 @@ class Server{
                 reply = request.IP;
             else reply = "NOT_FOUND";
         }
-        else reply= "NOT EXISTING OPERATION";
+
+        return reply;
     }
 
-    private add_to_table(RequestPacket request){
-        Pair[] new_DNStable = Pair[DNStable.length + 1];
-        new_DNStable.copyOf(DNStable, new_DNStable.length);
-
-        Pair new_pair = Pair(request.DNS, request.IP);
-
-        new_DNStable[new_DNStable.length - 1] = new_pair;
-        DNStable = new_DNStable;
-    }
-
-    private boolean check_table(RequestPacket request){
-        for(int i = 0; i < DNStable.length; i++){
-            if(DNStable[i].DNS == request.DNS){
-                request.IP = DNStable[i].IP;
-                return true;
-            }
+    private static boolean check_table(RequestPacket request){
+        if(DNStable.containsKey(request.DNS)){
+            request.IP = DNStable.get(request.DNS);
+            return true;
         }
-        return false;
+        else return false;
     }
+}
+
+class RequestPacket{
+    String operation;
+    String DNS;
+    String IP;
 }

@@ -3,28 +3,38 @@ import java.net.*;
 
 public class Client {
 
-    static final int  timeout = 1000;
+    static final int  timeout = 2000;
     public static void main(String[] args) throws IOException {
-        if (args.length >= 4 ) {
-            System.out.println("Usage:java Client <host> <port> <oper> <opnd>*");
-            return;
-        }
+        String message;
+        boolean register = false;
+       
+        System.out.println(args.length);
+        System.out.println(args[2]);
 
-        if( !( args[2] == "register" || args[2] ==  "lookup" || args[2] == "REGISTER" || args[2] ==  "LOOKUP")) {
-            System.out.println("<oper> must be register ou lookup");
+        if (args.length == 4 && (args[2].equals("lookup") || args[2].equals("LOOKUP"))) {
+            message = args[2] + " " + args[3]; // oper and opnd are prepare to be send
+        }
+        else if(args.length == 5 && (args[2].equals("register") || args[2].equals("REGISTER"))) {
+            message = args[2] + " " + args[3] + " " + args[4]; // oper and opnd are prepare to be send
+            register = true;
+        }
+        else {
+            System.out.println("Usage:java Client <host> <port> <oper> <opnd>*");
             return;
         }
 
         // send request
         DatagramSocket socket = new DatagramSocket();
-        String message = args[2] + " " + args[3]; // oper and opnd are prepare to be send
+
         byte[] sbuf= message.getBytes();
         InetAddress address= InetAddress.getByName(args[0]);
         Integer port = Integer.valueOf(args[1]);
         DatagramPacket packet = new DatagramPacket(sbuf, sbuf.length, address, port);
-        socket.setSoTimeout(timeout);
+
         socket.send(packet);
 
+        socket.setSoTimeout(timeout);
+        
         // get response
         byte[] rbuf= new byte[sbuf.length];
         packet = new DatagramPacket(rbuf, rbuf.length);
@@ -32,7 +42,13 @@ public class Client {
         String received= new String(packet.getData());
 
         // display response
-        System.out.println("Client: " + args[2] + " " + args[3] + ":" + received);
+        if(register){
+            if(received.equals("-1"))
+                received = "ERROR";
+
+            System.out.println("Client: " + args[2] + " " + args[3] + " " + args[4] + " : " + received);
+        }
+        else System.out.println("Client: " + args[2] + " " + args[3] + " : " + received);
 
         socket.close();
     }
