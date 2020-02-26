@@ -5,6 +5,8 @@ public class Client {
 
     //kind of Macro
     static final String separator = "|";
+    static final int  timeout = 1000;
+    static int numberOfTimeOuts = 3;
 
     // Identifiers of the server (IP Address and Port)
     private static String serverIPAddressStr;
@@ -14,7 +16,8 @@ public class Client {
     private static String multicastIPAddressStr; //IP address of the multicast group used by the server to advertise its service
     private static int multicastPort; //port number of the multicast group used by the server to advertise its service
     private static String oper; //  "register" or "lookup", depending on the operation to invoke
-    private static String plate, owner; // list of operands of the specified operation
+    private static String DNSname, IPaddress;    // list of operands of the specified operation 1 or 2 if lookup or register
+
 
     public static void main(String[] args) throws IOException {
         if (args.length < 3) {
@@ -30,25 +33,42 @@ public class Client {
             //check if oper is REGISTER OU LOOKUP, as are the only valid options
             if ( oper.equalsIgnoreCase("REGISTER")) {
                 if (args.length != 5) {
-                    System.out.println("Usage: java client <mcast_addr> <mcast_port> register <plate number> <owner name>");
+                    System.out.println("Usage: java client <mcast_addr> <mcast_port> register <DNS name> <IP address>");
                     return;
                 }
 
-                plate = args[3];
-                owner = args[4];
+                DNSname = args[3];
+                IPaddress = args[4];
 
             } else if (oper.equalsIgnoreCase( "LOOKUP")) {
                 if (args.length != 4) {
-                    System.out.println("Usage: java client <mcast_addr> <mcast_port> lookup <plate number>");
+                    System.out.println("Usage: java client <mcast_addr> <mcast_port> lookup <IP address>");
                     return;
                 }
-                plate = args[3];
+                IPaddress = args[3];
 
             } else {
                 System.out.println("Usage: java client <mcast_addr> <mcast_port> ( REGISTER | LOOKUP ) <opnd> * ");
                 return;
             }
         }
+
+        while(numberOfTimeOuts > 0 ) {
+            try {
+                run();
+            } catch (SocketTimeoutException s) {
+                System.out.println("Socket timed out!");
+                numberOfTimeOuts--;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+
+
+    }
+
+    public static void run() throws IOException {
 
         InetAddress group = InetAddress.getByName(multicastIPAddressStr);
         MulticastSocket multicastSocket = new MulticastSocket(multicastPort);
@@ -71,9 +91,9 @@ public class Client {
         // build message
         String request = oper.toString();
         if(oper.equalsIgnoreCase( "LOOKUP")) {
-            request += separator + plate; // args separated by "|"
+            request += separator + IPaddress; // args separated by "|"
         } else {
-            request += separator + plate + separator + owner;
+            request += separator + DNSname + separator + IPaddress;
         }
 
         // send request
@@ -87,6 +107,8 @@ public class Client {
 
         // receive response
         packet = new DatagramPacket(buf, buf.length);
+        //avoids the client to be awaiting for a service that will never came
+        socket.setSoTimeout(timeout);
         socket.receive(packet);
         String response = new String(packet.getData(), 0, packet.getLength());
 

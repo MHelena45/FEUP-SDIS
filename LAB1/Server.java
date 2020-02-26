@@ -4,7 +4,7 @@ import java.net.*;
 
 public class Server{
     private static Hashtable<String,String> DNStable;
-    
+
     private static int port;
 
     public static void main(String[] args) throws IOException{
@@ -24,7 +24,7 @@ public class Server{
         DatagramSocket socket = new DatagramSocket(port);
 
         System.out.println("Server initiated with port " + port);
-    
+
         while(true){
             byte[] buffer = new byte[256];
 
@@ -38,10 +38,10 @@ public class Server{
 
             buffer = reply.getBytes();
 
-			InetAddress address = packet.getAddress();
-			int port = packet.getPort();
-			packet = new DatagramPacket(buffer, buffer.length, address, port);
-            
+            InetAddress address = packet.getAddress();
+            int port = packet.getPort();
+            packet = new DatagramPacket(buffer, buffer.length, address, port);
+
             socket.send(packet);
         }
     }
@@ -52,15 +52,15 @@ public class Server{
         RequestPacket request = new RequestPacket();
         String reply;
 
-        if(words.length == 3 && (words[0].equals("REGISTER") || words[0].equals("register"))){
+        if(words.length == 3 && (words[0].equalsIgnoreCase("REGISTER") )){
             request.operation = "register";
             request.DNS = words[1];
-            request.IP = words[2];
+            request.IP_address = words[2];
 
-            System.out.println("Server: REGISTER " + request.DNS + " " + request.IP);
+            System.out.println("Server: REGISTER " + request.DNS + " " + request.IP_address);
 
             if(check_table(request)){
-                DNStable.put(request.DNS, request.IP);
+                DNStable.put(request.DNS, request.IP_address);
                 reply = Integer.toString(DNStable.size());
             }
             else reply = "-1";
@@ -72,7 +72,7 @@ public class Server{
             System.out.println("Server: LOOKUP " + request.DNS);
 
             if(check_table(request))
-                reply = request.IP;
+                reply = request.IP_address;
             else reply = "NOT_FOUND";
         }
 
@@ -81,15 +81,9 @@ public class Server{
 
     private static boolean check_table(RequestPacket request){
         if(DNStable.containsKey(request.DNS)){
-            request.IP = DNStable.get(request.DNS);
+            request.IP_address = DNStable.get(request.DNS);
             return true;
         }
         else return false;
     }
-}
-
-class RequestPacket{
-    String operation;
-    String DNS;
-    String IP;
 }
