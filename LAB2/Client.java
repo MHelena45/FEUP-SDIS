@@ -3,11 +3,12 @@ import java.net.*;
 
 public class Client {
 
+    //kind of Macro
     static final String separator = "|";
-    static final int timeout = 2000; // in ms
 
-    private static String serviceAddressStr;
-    private static int servicePort;
+    // Identifiers of the server (IP Address and Port)
+    private static String serverIPAddressStr;
+    private static int serverPort;
 
     //Args given
     private static String multicastIPAddressStr; //IP address of the multicast group used by the server to advertise its service
@@ -48,18 +49,6 @@ public class Client {
                 return;
             }
         }
-        try {
-            run();
-        } catch (SocketTimeoutException s) {
-            System.out.println("Socket timed out!");
-            return;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-    }
-
-    public static void run() throws IOException {
 
         InetAddress group = InetAddress.getByName(multicastIPAddressStr);
         MulticastSocket multicastSocket = new MulticastSocket(multicastPort);
@@ -69,15 +58,15 @@ public class Client {
 
         byte[] buf = new byte[256];
         DatagramPacket multicastPacket = new DatagramPacket(buf, buf.length);
-        multicastSocket.receive(multicastPacket);
+        multicastSocket.receive(multicastPacket); //IP of the server
 
         String msg = new String(multicastPacket.getData());
         String[] parts = msg.split(separator);
-        serviceAddressStr = parts[0];
-        servicePort = Integer.parseInt(parts[1]);
+        serverIPAddressStr = parts[0];
+        serverPort = Integer.parseInt(parts[1]);
 
         // multicast: <mcast_addr> <mcast_port>: <srvc_addr> <srvc_port>
-        System.out.println("multicast: " + multicastIPAddressStr + " " + multicastPort + ": " + serviceAddressStr + " " + servicePort);
+        System.out.println("multicast: " + multicastIPAddressStr + " " + multicastPort + ": " + serverIPAddressStr + " " + serverPort);
 
         // build message
         String request = oper.toString();
@@ -91,11 +80,10 @@ public class Client {
         DatagramSocket socket = new DatagramSocket();
 
         buf = request.getBytes();
-        InetAddress address = InetAddress.getByName(serviceAddressStr);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, servicePort);
+        InetAddress address = InetAddress.getByName(serverIPAddressStr);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
 
         socket.send(packet);
-        socket.setSoTimeout(timeout);
 
         // receive response
         packet = new DatagramPacket(buf, buf.length);
