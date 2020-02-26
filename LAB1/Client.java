@@ -4,7 +4,7 @@ import java.net.*;
 
 public class Client {
     //kind of Macro
-    static final String separator = "|";
+    static final String separator = " ";
     static final int  timeout = 1000;
     static int numberOfTimeOuts = 3;
 

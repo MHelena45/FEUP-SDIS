@@ -4,7 +4,7 @@ import java.net.*;
 public class Client {
 
     //kind of Macro
-    static final String separator = "|";
+    static final String separator = " ";
     static final int  timeout = 1000;
     static int numberOfTimeOuts = 3;
 
@@ -15,9 +15,7 @@ public class Client {
     //Args given
     private static String multicastIPAddressStr; //IP address of the multicast group used by the server to advertise its service
     private static int multicastPort; //port number of the multicast group used by the server to advertise its service
-    private static String oper; //  "register" or "lookup", depending on the operation to invoke
-    private static String DNSname, IPaddress;    // list of operands of the specified operation 1 or 2 if lookup or register
-
+    static RequestPacket requestPacket = new RequestPacket();
 
     public static void main(String[] args) throws IOException {
         if (args.length < 3) {
@@ -28,24 +26,24 @@ public class Client {
             //parse args
             multicastIPAddressStr = args[0];
             multicastPort = Integer.parseInt(args[1]);
-            oper = args[2];
+            requestPacket.operation = args[2];
 
             //check if oper is REGISTER OU LOOKUP, as are the only valid options
-            if ( oper.equalsIgnoreCase("REGISTER")) {
+            if ( requestPacket.operation .equalsIgnoreCase("REGISTER")) {
                 if (args.length != 5) {
                     System.out.println("Usage: java client <mcast_addr> <mcast_port> register <DNS name> <IP address>");
                     return;
                 }
 
-                DNSname = args[3];
-                IPaddress = args[4];
+                requestPacket.DNS = args[3];
+                requestPacket.IP_address = args[4];
 
-            } else if (oper.equalsIgnoreCase( "LOOKUP")) {
+            } else if (requestPacket.operation.equalsIgnoreCase( "LOOKUP")) {
                 if (args.length != 4) {
                     System.out.println("Usage: java client <mcast_addr> <mcast_port> lookup <IP address>");
                     return;
                 }
-                IPaddress = args[3];
+                requestPacket.DNS = args[3];
 
             } else {
                 System.out.println("Usage: java client <mcast_addr> <mcast_port> ( REGISTER | LOOKUP ) <opnd> * ");
@@ -89,11 +87,11 @@ public class Client {
         System.out.println("multicast: " + multicastIPAddressStr + " " + multicastPort + ": " + serverIPAddressStr + " " + serverPort);
 
         // build message
-        String request = oper.toString();
-        if(oper.equalsIgnoreCase( "LOOKUP")) {
-            request += separator + IPaddress; // args separated by "|"
+        String request = requestPacket.operation.toString();
+        if(requestPacket.operation.equalsIgnoreCase( "LOOKUP")) {
+            request += separator + requestPacket.DNS; // args separated by "|"
         } else {
-            request += separator + DNSname + separator + IPaddress;
+            request += separator + requestPacket.DNS + separator + requestPacket.IP_address;
         }
 
         // send request
