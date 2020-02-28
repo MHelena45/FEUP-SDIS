@@ -59,7 +59,7 @@ public class Server{
 
             System.out.println("Server: REGISTER " + request.DNS + " " + request.IP_address);
 
-            if(check_table(request)){
+            if(!check_table(request)){
                 DNStable.put(request.DNS, request.IP_address);
                 reply = Integer.toString(DNStable.size());
             }
@@ -80,7 +80,9 @@ public class Server{
     }
 
     private static boolean check_table(RequestPacket request){
+        System.out.println(request.DNS + ";");
         if(DNStable.containsKey(request.DNS)){
+            System.out.println("entrou");
             request.IP_address = DNStable.get(request.DNS);
             return true;
         }

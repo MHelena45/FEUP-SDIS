@@ -14,7 +14,7 @@ public class Client {
     private static RequestPacket requestPacket = new RequestPacket();
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 4 && args.length == 5) {
+        if (args.length != 4 && args.length != 5) {
             System.out.println("Usage:java Client <host> <port> <oper> <opnd>*");
             return;
         } else {
@@ -49,6 +49,7 @@ public class Client {
         while (numberOfTimeOuts > 0) {
             try {
                 run();
+                break;
             } catch (SocketTimeoutException s) {
                 System.out.println("Socket timed out!");
                 numberOfTimeOuts--;
