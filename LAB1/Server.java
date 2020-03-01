@@ -48,7 +48,7 @@ public class Server{
 
     private static String parseRequest(DatagramPacket packet){
         String data = new String(packet.getData(), 0, packet.getData().length);
-        String[] words = data.split("\\s");
+        String[] words = data.split("\\s", 2);
         RequestPacket request = new RequestPacket();
         String reply;
 
@@ -65,7 +65,7 @@ public class Server{
             }
             else reply = "-1";
         }
-        else{
+        else if(words[0].equalsIgnoreCase("lookup")){
             request.operation = "lookup";
             request.DNS = words[1];
 
@@ -74,7 +74,7 @@ public class Server{
             if(check_table(request))
                 reply = request.IP_address;
             else reply = "NOT_FOUND";
-        }
+        } else reply = "-1";
 
         return reply;
     }
