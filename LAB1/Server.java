@@ -1,9 +1,9 @@
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.io.IOException;
 import java.net.*;
 
 public class Server{
-    private static Hashtable<String,String> DNStable;
+    private static HashMap<String,String> DNStable = new HashMap<String, String>();
 
     private static int port;
 
@@ -12,8 +12,6 @@ public class Server{
             System.out.println("Missing argument port");
             return;
         }
-
-        DNStable = new Hashtable<String, String>();
 
         port = Integer.parseInt(args[0]);
 
@@ -57,6 +55,9 @@ public class Server{
             request.DNS = words[1];
             request.IP_address = words[2];
 
+            System.out.println(";"+request.DNS+";");
+
+
             System.out.println("Server: REGISTER " + request.DNS + " " + request.IP_address);
 
             if(!check_table(request)){
@@ -68,6 +69,7 @@ public class Server{
         else if(words[0].equalsIgnoreCase("lookup")){
             request.operation = "lookup";
             request.DNS = words[1];
+            System.out.println(";"+request.DNS+";");
 
             System.out.println("Server: LOOKUP " + request.DNS);
 
@@ -80,7 +82,7 @@ public class Server{
     }
 
     private static boolean check_table(RequestPacket request){
-        System.out.println(request.DNS + ";");
+        System.out.println(DNStable.containsKey(request.DNS));
         if(DNStable.containsKey(request.DNS)){
             System.out.println("entrou");
             request.IP_address = DNStable.get(request.DNS);
