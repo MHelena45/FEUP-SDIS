@@ -9,7 +9,7 @@ public class Server{
 
     public static void main(String[] args) throws IOException{
         if(args.length != 1){
-            System.out.println("Missing argument port");
+            System.out.println("Usage: java Server <port>");
             return;
         }
 
@@ -46,17 +46,14 @@ public class Server{
 
     private static String parseRequest(DatagramPacket packet){
         String data = new String(packet.getData(), 0, packet.getData().length);
-        String[] words = data.split("\\s");
+        String[] words = data.trim().split("\\s");
         RequestPacket request = new RequestPacket();
         String reply;
 
         if(words.length == 3 && (words[0].equalsIgnoreCase("REGISTER") )){
             request.operation = "register";
-            request.DNS = words[1];
-            request.IP_address = words[2];
-
-            System.out.println(";"+request.DNS+";");
-
+            request.DNS = words[1].trim();
+            request.IP_address = words[2].trim();
 
             System.out.println("Server: REGISTER " + request.DNS + " " + request.IP_address);
 
@@ -68,8 +65,7 @@ public class Server{
         }
         else if(words[0].equalsIgnoreCase("lookup")){
             request.operation = "lookup";
-            request.DNS = words[1];
-            System.out.println(";"+request.DNS+";");
+            request.DNS = words[1].trim();
 
             System.out.println("Server: LOOKUP " + request.DNS);
 
@@ -82,9 +78,7 @@ public class Server{
     }
 
     private static boolean check_table(RequestPacket request){
-        System.out.println(DNStable.containsKey(request.DNS));
         if(DNStable.containsKey(request.DNS)){
-            System.out.println("entrou");
             request.IP_address = DNStable.get(request.DNS);
             return true;
         }
