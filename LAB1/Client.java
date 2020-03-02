@@ -26,7 +26,7 @@ public class Client {
             //check if oper is REGISTER OU LOOKUP, as are the only valid options
             if (requestPacket.operation.equalsIgnoreCase("REGISTER")) {
                 if (args.length != 5) {
-                    System.out.println("Usage: java client <host <port> register <DNS name> <IP address>");
+                    System.out.println("Usage: java client <host> <port> register <DNS name> <IP address>");
                     return;
                 }
 

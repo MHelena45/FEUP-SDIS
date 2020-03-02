@@ -1,4 +1,4 @@
-package Server;
+package com.company.lab3;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
