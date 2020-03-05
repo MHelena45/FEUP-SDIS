@@ -15,14 +15,16 @@ public class Server{
 
         port = Integer.parseInt(args[0]);
 
-        getRequests();
-    }
-
-    private static void getRequests() throws IOException {
         DatagramSocket socket = new DatagramSocket(port);
 
         System.out.println("Server initiated with port " + port);
 
+        getRequests(socket);
+
+        socket.close();
+    }
+
+    private static void getRequests(DatagramSocket socket) throws IOException {
         while(true){
             byte[] buffer = new byte[256];
 
