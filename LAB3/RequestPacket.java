@@ -1,4 +1,4 @@
-package com.company.lab3;
+package com.lab3;
 
 class RequestPacket{
 

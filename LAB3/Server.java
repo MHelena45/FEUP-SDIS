@@ -1,4 +1,4 @@
-package com.company.lab3;
+package com.lab3;
 
 import java.util.HashMap;
 import java.rmi.registry.Registry;
@@ -10,16 +10,15 @@ import java.rmi.server.UnicastRemoteObject;
 public class Server implements RemoteInterface{
     private static HashMap<String,String> DNStable = new HashMap<String, String>();
 
-    private static RemoteObject remoteObject;
-
-    public void main(String[] args) throws RemoteException{
+    public static void main(String[] args) {
         if(args.length != 1){
             System.out.println("Usage: java Server <remote_object_name>");
             return;
         }
 
         try {
-            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(this, 0);
+            Server obj = new Server();
+            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(obj, 0);
 
             // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry();

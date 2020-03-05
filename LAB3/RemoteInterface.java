@@ -1,9 +1,9 @@
-package com.company.lab3;
+package com.lab3;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface RemoteInterface extends Remote{
-    public String lookup(String DNS) throws RemoteException;
-    public int register(String DNS, String IP) throws RemoteException;
+    String lookup(String DNS) throws RemoteException;
+    int register(String DNS, String IP) throws RemoteException;
 }
