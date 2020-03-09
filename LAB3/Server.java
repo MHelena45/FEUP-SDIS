@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteObject;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Server implements RemoteInterface{
@@ -21,7 +20,7 @@ public class Server implements RemoteInterface{
             RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(obj, 0);
 
             // Bind the remote object's stub in the registry
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.createRegistry(1099);
             registry.rebind(args[0], stub);
 
             System.out.println("Server ready");
