@@ -1,5 +1,3 @@
-package com.lab3;
-
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
