@@ -1,5 +1,3 @@
-package com.lab3;
-
 class RequestPacket{
 
     String operation; //  "register" or "lookup", depending on the operation to invoke

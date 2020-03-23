@@ -1,5 +1,3 @@
-package com.lab3;
-
 import java.util.HashMap;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
