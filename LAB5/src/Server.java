@@ -1,20 +1,23 @@
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.HashMap;
 
 public class Server{
     private static HashMap<String,String> DNStable = new HashMap<String, String>();
 
     private static int port;
-    private static SSLServerSocket srvSo = null;
-    private static Socket echoSo = null;
+
+    private static SSLSocket sslSocket = null;
+    private static SSLServerSocket s = null;
+    private static SSLServerSocketFactory ssf = null;
 
     static void usage(){
-        System.out.println("Usage: java EchoServer <port_no>");
+        System.out.println("Usage: java SSLServer <port_no> <cypher-suite>*");
     }
 
     public static void main(String[] args) throws IOException {
@@ -24,6 +27,8 @@ public class Server{
             return;
         }
 
+        ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
         try {
             port = Integer.parseInt(args[0]);
             if( port <1024 || port>= 1<<16){
@@ -31,18 +36,23 @@ public class Server{
                 System.out.println("\t <port_no> must be a 16 bit integer");
                 return;
             }
-            srvSo = new ServerSocket(port);
+            s = (SSLServerSocket) ssf.createServerSocket(port);
+        }
+        catch( IOException e) {
+            System.out.println("Server - Failed to create SSLServerSocket");
+            e.getMessage();
+            return;
         } catch ( NumberFormatException e){
             usage();
             return;
-        } catch (IOException e){
-            System.out.println("Failed to listen on port " + port);
         }
 
-        srvSo.setSoTimeout(50000);
+        s.setSoTimeout(50000);
 
         try {
-            echoSo = srvSo.accept();
+            //s = s.accept();
+            // the method SSLServerSocket.accept() returns a SSLSocket, that is used by the server side to transfer data
+            sslSocket = (SSLSocket) s.accept();
         } catch (IOException e){
             System.out.println("Failed to accept on port " + port);
         }
@@ -58,10 +68,10 @@ public class Server{
         BufferedReader in = null;
 
         in = new BufferedReader( new InputStreamReader(
-                echoSo.getInputStream()
+                sslSocket.getInputStream()
         ));
 
-        out = new PrintWriter(echoSo.getOutputStream());
+        out = new PrintWriter(sslSocket.getOutputStream());
 
         String line = null;
         String reply = null;
@@ -79,14 +89,14 @@ public class Server{
 
         System.out.println("Server: echoed \n\t" + reply);
 
-        echoSo.shutdownOutput();
+        sslSocket.close();
 
         while (in.readLine() != null);
 
         System.out.println("Server: Client shutdown output: closing socket");
-        echoSo.close();
 
-        srvSo.close();
+        s.close();
+        sslSocket.shutdownOutput();
 
     }
 

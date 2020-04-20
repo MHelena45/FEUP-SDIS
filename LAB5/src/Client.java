@@ -1,8 +1,9 @@
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
 
 public class Client {
     //kind of Macro
@@ -10,14 +11,16 @@ public class Client {
     static final int  timeout = 1000;
     static int numberOfTimeOuts = 3;
     private static RequestPacket requestPacket = new RequestPacket();
-    private static SSLSocket socket;
+
+    private static SSLSocket sslSocket;
+    private static SSLSocketFactory ssf = null;
 
     static void usage(){
-        System.out.println("Usage: java Client  <host_name> <port_number>  <oper> <opnd> *");
+        System.out.println("Usage: java Client  <host> <port>  <oper> <opnd>* <cypher-suite>*");
     }
 
     public static void main(String[] args) throws IOException {
-        String host_name;
+        String host;
         int port = 0;
 
         if (args.length != 4 && args.length != 5) {
@@ -25,15 +28,17 @@ public class Client {
             return;
         }
 
+        ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+
         try {
-            host_name = args[0];
+            host = args[0];
             port = Integer.parseInt(args[1]);
             if( port <1024 || port>= 1 << 16){
                 usage();
                 System.out.println("\t <port_no> must be a 16 bit integer");
                 return;
             }
-            socket = new Socket(host_name, port);
+            sslSocket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, port);
 
         } catch (final NumberFormatException e) {
             usage();
@@ -99,12 +104,12 @@ public class Client {
         BufferedReader in = null;
 
         in = new BufferedReader( new InputStreamReader(
-                socket.getInputStream()
+                sslSocket.getInputStream()
         ));
 
-        socket.setSoTimeout(timeout);
+        sslSocket.setSoTimeout(timeout);
 
-        out = new PrintWriter(socket.getOutputStream());
+        out = new PrintWriter(sslSocket.getOutputStream());
 
         out.println(message);
         out.flush();
@@ -124,11 +129,12 @@ public class Client {
         try {
             while (in.readLine() != null);
             System.out.println("Client: Server shut down output: closing");
-            socket.close();
+            sslSocket.close();
         } catch (IOException e){
-            socket.close();
+            sslSocket.close();
         }
 
-        socket.shutdownOutput();
+        sslSocket.shutdownOutput();
+
     }
 }
