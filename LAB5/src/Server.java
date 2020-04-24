@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Server{
@@ -37,6 +38,7 @@ public class Server{
                 return;
             }
             s = (SSLServerSocket) ssf.createServerSocket(port);
+           // s.setNeedClientAuth(true);
         }
         catch( IOException e) {
             System.out.println("Server - Failed to create SSLServerSocket");
@@ -58,6 +60,23 @@ public class Server{
         }
 
         System.out.println("Server initiated with port " + port);
+
+        if(args.length > 1){
+            String[] cyphers = Arrays.copyOfRange(args, 1, args.length);
+            for(String cypher : cyphers) {
+                System.out.println(cypher);
+            }
+
+            try {
+                sslSocket.setEnabledCipherSuites(cyphers);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                return;
+            }
+
+        } else {
+            System.out.println("Using custom Cipher Suites");
+        }
 
         getRequest();
 

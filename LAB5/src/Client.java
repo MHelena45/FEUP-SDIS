@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.util.Arrays;
 
 public class Client {
     //kind of Macro
@@ -48,26 +50,48 @@ public class Client {
             return;
         }
 
+        Integer number_of_not_cypher_suite_args = 0;
         //check if oper is REGISTER OU LOOKUP, as are the only valid options
         if (requestPacket.operation.equalsIgnoreCase("REGISTER")) {
-            if (args.length != 5) {
-                System.out.println("Usage: java client <host> <port> register <DNS name> <IP address>");
+            if (args.length < 5) {
+                System.out.println("Usage: java client <host> <port> register <DNS name> <IP address> <cypher-suite>*");
                 return;
             }
 
             requestPacket.DNS = args[3];
             requestPacket.IP_address = args[4];
+            number_of_not_cypher_suite_args = 5;
 
         } else if (requestPacket.operation.equalsIgnoreCase("LOOKUP")) {
-            if (args.length != 4) {
-                System.out.println("Usage: java client <host> <port> lookup <DNS name>");
+            if (args.length < 4) {
+                System.out.println("Usage: java client <host> <port> lookup <DNS name> <cypher-suite>*");
                 return;
             }
             requestPacket.DNS = args[3];
+            number_of_not_cypher_suite_args = 4;
 
         } else {
-            System.out.println("Usage: java client <host_addr> <port> ( REGISTER | LOOKUP ) <opnd> * ");
+            System.out.println("Usage: java client <host_addr> <port> ( REGISTER | LOOKUP ) <opnd> * <cypher-suite>*");
             return;
+        }
+
+
+        if((args.length - number_of_not_cypher_suite_args) >= 1){
+            String[] cyphers = Arrays.copyOfRange(args, number_of_not_cypher_suite_args, args.length);
+            for(String cypher : cyphers) {
+                System.out.println(cypher);
+            }
+
+            try {
+                sslSocket.setEnabledCipherSuites(cyphers);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                return;
+            }
+
+        } else {
+            System.out.println("Using custom Cipher Suites");
+
         }
 
           /*
